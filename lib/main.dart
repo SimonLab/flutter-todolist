@@ -16,19 +16,48 @@ class App extends StatelessWidget {
 }
 
 class Item {
-  const Item({this.value});
-  final String value;
+  String value;
+  bool completed;
+  
+  Item(this.value, [this.completed = false]);
 }
 
-class ShowItem extends StatelessWidget {
-  ShowItem({this.item});
+class ShowItem extends StatefulWidget {
+  ShowItem(this.item);
 
   final Item item;
+  @override
+  _ShowItem createState() => _ShowItem();
+}
+
+class _ShowItem extends State<ShowItem> {
+
+  TextStyle _itemStyle(completed) {
+    if(completed)
+      return TextStyle(
+        color: Colors.black54,
+        decoration: TextDecoration.lineThrough,
+      );
+    else
+      return TextStyle(
+        decoration: TextDecoration.none
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(item.value),
+    return CheckboxListTile(
+      title: Text(
+        widget.item.value,
+        style: _itemStyle(widget.item.completed),
+        ),
+      value: widget.item.completed,
+      onChanged: (newValue){
+        setState(() {
+          widget.item.completed = newValue;
+        });
+      },
+      controlAffinity: ListTileControlAffinity.leading,
     );
   }
 }
@@ -46,10 +75,10 @@ class _TodoListState extends State<TodoList> {
   Widget build(BuildContext context) {
     return Column(children: [
       Expanded(
-          child: ListView(
-        children: _items.map((Item item) {
-          return ShowItem(item: item);
-        }).toList(),
+        child: ListView(
+          children: _items.map((Item item) {
+            return ShowItem(item);
+          }).toList(),
       )),
       TextField(
         controller: _controller,
@@ -60,7 +89,7 @@ class _TodoListState extends State<TodoList> {
         onSubmitted: (newItem) {
 
           setState(() {
-            _items.add(Item(value: newItem));
+            _items.add(Item(newItem));
             _controller.clear();
           });
         },
